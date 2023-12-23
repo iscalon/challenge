@@ -2,7 +2,7 @@ package com.example.demo.business;
 
 import com.example.demo.data.Company;
 import com.example.demo.data.Deposit;
-import com.example.demo.data.GiftDeposit;
+import com.example.demo.data.MealDeposit;
 import com.example.demo.data.User;
 import org.springframework.stereotype.Component;
 
@@ -33,7 +33,7 @@ public class MealDepositStrategy implements DepositStrategy {
                 .filter(balance -> balance.compareTo(amount) >= 0)
                 .orElseThrow(() -> new IllegalArgumentException("Meal amount : " + amount + " is greater than the company balance"));
 
-        Deposit deposit = new GiftDeposit(amount, computeExpirationDate());
+        Deposit deposit = new MealDeposit(amount, computeExpirationDate());
         userBalanceRepository.addDeposit(user, deposit);
         company.setBalance(companyBalance.subtract(amount));
         return deposit;

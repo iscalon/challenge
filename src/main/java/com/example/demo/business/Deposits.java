@@ -42,7 +42,7 @@ public class Deposits {
     @Component
     public static class Factory {
 
-        /** All available strategies */
+        /** All available strategies by type */
         private final Map<String, DepositStrategy> depositStrategies;
 
         private Factory(Collection<DepositStrategy> depositStrategies) {
