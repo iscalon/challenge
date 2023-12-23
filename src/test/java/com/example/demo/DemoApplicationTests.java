@@ -15,5 +15,4 @@ class DemoApplicationTests {
 	void contextLoads() {
 		assertThat(demoComponent.getName()).isEqualTo("com.example.demo.DemoComponent");
 	}
-
 }
