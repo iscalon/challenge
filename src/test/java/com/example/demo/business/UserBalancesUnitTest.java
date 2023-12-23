@@ -34,6 +34,6 @@ class UserBalancesUnitTest {
 
         UserBalances userBalances = new UserBalances(userBalanceRepository);
         BigDecimal balance = userBalances.computeBalance(new User(-1));
-        assertThat(balance).isEqualTo(BigDecimal.valueOf(3d));
+        assertThat(balance).isEqualTo(BigDecimal.valueOf(3));
     }
 }
