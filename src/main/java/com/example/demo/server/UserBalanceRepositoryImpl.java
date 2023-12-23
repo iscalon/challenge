@@ -5,26 +5,29 @@ import com.example.demo.data.Deposit;
 import com.example.demo.data.User;
 import org.springframework.stereotype.Component;
 
-import java.util.Collection;
+import java.util.*;
 
 @Component
 public class UserBalanceRepositoryImpl implements UserBalanceRepository {
 
-    /**
-     * @param user    the user who receives the deposit.
-     * @param deposit
-     */
-    @Override
-    public void addDeposit(User user, Deposit deposit) {
-        throw new RuntimeException("Not yet implemented");
+    private final Map<User, Collection<Deposit>> deposits;
+
+    public UserBalanceRepositoryImpl() {
+        this.deposits = new HashMap<>();
     }
 
-    /**
-     * @param user the user from who we want to retrieve deposits.
-     * @return
-     */
+    @Override
+    public void addDeposit(User user, Deposit deposit) {
+        deposits.computeIfAbsent(user, candidate -> new ArrayList<>());
+        deposits.compute(user, (candidate, list) -> {
+            list.add(deposit);
+            return list;
+        });
+    }
+
     @Override
     public Collection<Deposit> getDeposits(User user) {
-        throw new RuntimeException("Not yet implemented");
+        // Defensive copy
+        return List.copyOf(deposits.getOrDefault(user, List.of()));
     }
 }

@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component;
 import java.math.BigDecimal;
 import java.util.Collection;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
@@ -19,8 +20,8 @@ public class Deposits {
     private final Company company;
     private final User user;
 
-    public Deposits(DepositStrategy depositStrategy, Company company, User user) {
-        this.depositStrategy = requireNonNull(depositStrategy);
+    private Deposits(DepositStrategy depositStrategy, Company company, User user) {
+        this.depositStrategy = depositStrategy;
         this.company = company;
         this.user = user;
     }
@@ -30,7 +31,7 @@ public class Deposits {
             throw new IllegalArgumentException("Amount cannot be null");
         }
         if(amount.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("Amount must be >= 0");
+            throw new IllegalArgumentException("Amount must be greater than or equals to 0");
         }
         return depositStrategy.execute(company, user, amount);
     }
@@ -46,7 +47,11 @@ public class Deposits {
         }
 
         public Deposits create(String strategyTypeName, Company company, User user) {
-            return new Deposits(this.depositStrategies.get(strategyTypeName), company, user);
+            DepositStrategy strategy = this.depositStrategies.get(strategyTypeName);
+            if(strategy == null) {
+                throw new NoSuchElementException("Deposit strategy type name : " + strategyTypeName + " not found");
+            }
+            return new Deposits(strategy, requireNonNull(company), requireNonNull(user));
         }
     }
 }

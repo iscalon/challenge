@@ -36,7 +36,6 @@ public class GiftDepositStrategy implements DepositStrategy {
     }
 
     private LocalDate computeExpirationDate() {
-        // TODO : to implement
-        return LocalDate.now().plusYears(1);
+        return LocalDate.now().plusDays(365);
     }
 }
