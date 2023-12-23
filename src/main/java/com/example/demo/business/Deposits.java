@@ -14,14 +14,17 @@ import java.util.function.Function;
 import static java.util.Objects.requireNonNull;
 import static java.util.stream.Collectors.toMap;
 
+/**
+ * Allow to perform deposits using a strategy pattern.
+ */
 public class Deposits {
 
-    private final DepositStrategy depositStrategy;
+    private final DepositStrategy strategy;
     private final Company company;
     private final User user;
 
-    private Deposits(DepositStrategy depositStrategy, Company company, User user) {
-        this.depositStrategy = depositStrategy;
+    private Deposits(DepositStrategy strategy, Company company, User user) {
+        this.strategy = strategy;
         this.company = company;
         this.user = user;
     }
@@ -33,12 +36,13 @@ public class Deposits {
         if(amount.compareTo(BigDecimal.ZERO) < 0) {
             throw new IllegalArgumentException("Amount must be greater than or equals to 0");
         }
-        return depositStrategy.execute(company, user, amount);
+        return strategy.execute(company, user, amount);
     }
 
     @Component
     public static class Factory {
 
+        /** All available strategies */
         private final Map<String, DepositStrategy> depositStrategies;
 
         private Factory(Collection<DepositStrategy> depositStrategies) {
