@@ -3,7 +3,6 @@ package com.card.nico.deposit.layers.http;
 import com.card.nico.deposit.layers.core.*;
 import com.card.nico.deposit.layers.core.exceptions.CompanyNotFoundException;
 import com.card.nico.deposit.layers.core.exceptions.EmployeeNotFoundException;
-import com.card.nico.deposit.layers.core.exceptions.NotAnEmployeeException;
 import com.card.nico.deposit.layers.core.ports.in.CompanyDepositPerformer;
 import com.card.nico.deposit.layers.core.ports.in.CompanyGiftDepositPerformer;
 import com.card.nico.deposit.layers.core.ports.out.CompanyStore;
@@ -17,7 +16,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 
@@ -87,9 +85,6 @@ class GiftDepositController {
                 .orElseThrow(() -> new CompanyNotFoundException(companyName));
         Employee employee = employeeStore.findByName(employeeName)
                 .orElseThrow(() -> new EmployeeNotFoundException(employeeName));
-        if(company.employees().stream().noneMatch(candidate -> Objects.equals(candidate.name(), employeeName))) {
-            throw new NotAnEmployeeException(companyName, employeeName);
-        }
 
         Deposit deposit = doDepositAndUpdateCompanyBalance(command, company, employee, companyName);
         return ResponseEntity.created(
