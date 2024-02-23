@@ -18,7 +18,7 @@ public class GiftDepositStrategy implements DepositStrategy {
 
     @Override
     public Deposit createDeposit(MoneyAmount amount) {
-        assertSufficientCompanyBalance(company, amount);
+        assertSufficientAmountAndCompanyBalance(company, amount);
         return new GiftDeposit(-1L, amount, company, employee, creationDate(), expirationDate());
     }
 

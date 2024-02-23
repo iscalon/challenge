@@ -5,6 +5,7 @@ import com.card.nico.deposit.layers.core.Company;
 import com.card.nico.deposit.layers.core.Deposit;
 import com.card.nico.deposit.layers.core.Employee;
 import com.card.nico.deposit.layers.core.MoneyAmount;
+import com.card.nico.deposit.layers.core.exceptions.DepositCoreException;
 import com.card.nico.deposit.layers.core.exceptions.InsufficientCompanyBalanceException;
 import com.card.nico.deposit.layers.core.ports.in.CompanyDepositPerformer;
 import com.card.nico.deposit.layers.core.ports.in.CompanyGiftDepositPerformer;
@@ -14,6 +15,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.time.LocalDate;
+import java.time.Month;
+import java.time.temporal.TemporalAdjusters;
 import java.util.Set;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -74,7 +77,7 @@ class DepositPerformerTest {
                 .isEqualTo("meal");
         LocalDate depositCreationDate = deposit.getCreationDate().toLocalDate();
         assertThat(deposit.getExpirationDate())
-                .hasValue(depositCreationDate.plusMonths(2));
+                .hasValue(mealExpirationDate(depositCreationDate));
     }
 
     @Test
@@ -109,5 +112,45 @@ class DepositPerformerTest {
                 .doDeposit(mealAmount))
                 .isInstanceOf(InsufficientCompanyBalanceException.class)
                 .hasMessage("Mercedes company's balance : 90.00 EUR is insufficient to perform a 500.00 EUR debit");
+    }
+
+
+    @Test
+    @DisplayName("A company cannot create a gift deposit to an employee if deposit amount is <= 0")
+    void test05() {
+        Employee john = new Employee("John");
+        MoneyAmount totalBalance = MoneyAmount.of(90d, EURO_CODE);
+        Company total = new Company("Total", totalBalance, Set.of(john));
+        MoneyAmount giftAmount = MoneyAmount.of(0d, EURO_CODE);
+        CompanyDepositPerformer companyDepositPerformer = new CompanyGiftDepositPerformer(total);
+        CompanyToEmployeeDepositPerformer companyToEmployeeDepositPerformer = companyDepositPerformer
+                .to(john);
+
+        assertThatThrownBy(() -> companyToEmployeeDepositPerformer
+                .doDeposit(giftAmount))
+                .isInstanceOf(DepositCoreException.class)
+                .hasMessage("Amount must be greater than 0");
+    }
+
+    @Test
+    @DisplayName("A company cannot create a meal deposit to an employee if deposit amount is <= 0")
+    void test06() {
+        Employee john = new Employee("John");
+        MoneyAmount mercedesBalance = MoneyAmount.of(90d, EURO_CODE);
+        Company total = new Company("Mercedes", mercedesBalance, Set.of(john));
+        MoneyAmount mealAmount = MoneyAmount.of(0d, EURO_CODE);
+        CompanyDepositPerformer companyDepositPerformer = new CompanyMealDepositPerformer(total);
+        CompanyToEmployeeDepositPerformer companyToEmployeeDepositPerformer = companyDepositPerformer
+                .to(john);
+
+        assertThatThrownBy(() -> companyToEmployeeDepositPerformer
+                .doDeposit(mealAmount))
+                .isInstanceOf(DepositCoreException.class)
+                .hasMessage("Amount must be greater than 0");
+    }
+
+    private static LocalDate mealExpirationDate(LocalDate depositCreationDate) {
+        int nextYear = depositCreationDate.getYear() + 1;
+        return LocalDate.of(nextYear, Month.FEBRUARY, 1).with(TemporalAdjusters.lastDayOfMonth());
     }
 }
