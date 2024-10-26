@@ -8,6 +8,8 @@ import com.card.nico.deposit.layers.core.ports.in.CompanyGiftDepositPerformer;
 import com.card.nico.deposit.layers.core.ports.out.CompanyStore;
 import com.card.nico.deposit.layers.core.ports.out.EmployeeStore;
 import com.card.nico.deposit.layers.core.ports.out.GiftDepositStore;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
@@ -38,6 +40,7 @@ class GiftDepositController {
         this.companyDepositPerformer = CompanyGiftDepositPerformer::new;
     }
 
+    @SuppressWarnings("java:S1452")
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id) {
         Optional<Representation> giftDepositRepresentation = this.giftDepositStore.findById(id)
@@ -47,6 +50,7 @@ class GiftDepositController {
         return ResponseEntity.of(giftDepositRepresentation);
     }
 
+    @SuppressWarnings("java:S1452")
     @GetMapping
     public ResponseEntity<?> list() {
         List<Representation> representations = this.giftDepositStore.findAll().stream()
@@ -62,6 +66,7 @@ class GiftDepositController {
                 collectionModel.add(selfLink));
     }
 
+    @SuppressWarnings("java:S1452")
     @GetMapping("/employee/{name}")
     public ResponseEntity<?> findByEmployee(@PathVariable("name") String employeeName) {
         List<Representation> representations = this.giftDepositStore.findByEmployeeName(employeeName).stream()
@@ -76,6 +81,7 @@ class GiftDepositController {
                 collectionModel.add(selfLink));
     }
 
+    @SuppressWarnings("java:S1452")
     @PostMapping
     @Transactional
     public ResponseEntity<?> create(@RequestBody CreateCommand command) {
@@ -150,6 +156,16 @@ class GiftDepositController {
 
         public String getCreationDate() {
             return creationDate;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return EqualsBuilder.reflectionEquals(this, obj);
+        }
+
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
         }
     }
 }

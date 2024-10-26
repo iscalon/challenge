@@ -7,6 +7,9 @@ import com.card.nico.deposit.layers.core.exceptions.CompanyNotFoundException;
 import com.card.nico.deposit.layers.core.exceptions.EmployeeNotFoundException;
 import com.card.nico.deposit.layers.core.ports.out.CompanyStore;
 import com.card.nico.deposit.layers.core.ports.out.EmployeeStore;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.springframework.hateoas.Affordance;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
@@ -36,6 +39,7 @@ class CompanyController {
         this.employeeStore = requireNonNull(employeeStore);
     }
 
+    @SuppressWarnings("java:S1452")
     @GetMapping("/{name}")
     public ResponseEntity<?> findByName(@PathVariable String name) {
         Optional<Representation> companyRepresentation = this.companyStore.findByName(name)
@@ -44,6 +48,7 @@ class CompanyController {
         return ResponseEntity.of(companyRepresentation);
     }
 
+    @SuppressWarnings("java:S1452")
     @GetMapping
     public ResponseEntity<?> list() {
         List<Representation> representations = this.companyStore.findAll().stream()
@@ -58,6 +63,7 @@ class CompanyController {
                 collectionModel.add(selfLink));
     }
 
+    @SuppressWarnings("java:S1452")
     @PostMapping
     public ResponseEntity<?> create(@RequestBody CreateCommand command) {
         Set<String> employeesNames = Stream.of(command.employeesNames()).collect(Collectors.toSet());
@@ -70,6 +76,7 @@ class CompanyController {
                 .build();
     }
 
+    @SuppressWarnings("java:S1452")
     @PutMapping("/company/{companyName}/employee")
     public ResponseEntity<?> addEmployee(@PathVariable String companyName, @RequestBody EmployeeCommand command) {
         String employeeName = command.employeeName();
@@ -95,7 +102,23 @@ class CompanyController {
                 .collect(Collectors.toSet());
     }
 
-    record CreateCommand(String companyName, Double amount, String currencyCode, String[] employeesNames) {}
+    record CreateCommand(String companyName, Double amount, String currencyCode, String... employeesNames) {
+
+        @Override
+        public boolean equals(Object obj) {
+            return EqualsBuilder.reflectionEquals(this, obj);
+        }
+
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
+        }
+
+        @Override
+        public String toString() {
+            return ToStringBuilder.reflectionToString(this);
+        }
+    }
 
     record EmployeeCommand(String employeeName) {}
 
@@ -137,6 +160,16 @@ class CompanyController {
 
         public String getBalance() {
             return balance;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return EqualsBuilder.reflectionEquals(this, obj);
+        }
+
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
         }
     }
 }

@@ -5,12 +5,14 @@ import org.springframework.hateoas.RepresentationModel;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
 
 
 @RestController
 class IndexController {
 
+    @SuppressWarnings("java:S1452")
     @GetMapping("/")
     public RepresentationModel<?> index() {
         RepresentationModel<?> index = new RepresentationModel<>();

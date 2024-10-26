@@ -3,6 +3,8 @@ package com.card.nico.deposit.layers.http;
 import com.card.nico.deposit.layers.core.Company;
 import com.card.nico.deposit.layers.core.Employee;
 import com.card.nico.deposit.layers.core.ports.out.EmployeeStore;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
@@ -25,6 +27,7 @@ class EmployeeController {
         this.employeeStore = requireNonNull(employeeStore);
     }
 
+    @SuppressWarnings("java:S1452")
     @GetMapping("/{name}")
     public ResponseEntity<?> findByName(@PathVariable String name) {
         Optional<Representation> employeeRepresentation = this.employeeStore.findByName(name)
@@ -33,6 +36,7 @@ class EmployeeController {
         return ResponseEntity.of(employeeRepresentation);
     }
 
+    @SuppressWarnings("java:S1452")
     @GetMapping
     public ResponseEntity<?> list() {
         List<Representation> representations = this.employeeStore.findAll().stream()
@@ -46,6 +50,7 @@ class EmployeeController {
                 collectionModel.add(selfLink));
     }
 
+    @SuppressWarnings("java:S1452")
     @PostMapping
     public ResponseEntity<?> create(@RequestBody CreateCommand command) {
         String employeeName = command.employeeName();
@@ -92,6 +97,16 @@ class EmployeeController {
 
         public String getName() {
             return name;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            return EqualsBuilder.reflectionEquals(this, obj);
+        }
+
+        @Override
+        public int hashCode() {
+            return HashCodeBuilder.reflectionHashCode(this);
         }
     }
 }
