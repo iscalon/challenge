@@ -1,12 +1,9 @@
 package com.card.nico.deposit.layers.http;
 
-import com.card.nico.deposit.layers.core.*;
-import com.card.nico.deposit.layers.core.exceptions.CompanyNotFoundException;
-import com.card.nico.deposit.layers.core.exceptions.EmployeeNotFoundException;
-import com.card.nico.deposit.layers.core.ports.in.CompanyDepositPerformer;
-import com.card.nico.deposit.layers.core.ports.in.CompanyMealDepositPerformer;
-import com.card.nico.deposit.layers.core.ports.out.CompanyStore;
-import com.card.nico.deposit.layers.core.ports.out.EmployeeStore;
+import com.card.nico.deposit.layers.core.Deposit;
+import com.card.nico.deposit.layers.core.MealDeposit;
+import com.card.nico.deposit.layers.core.MoneyAmount;
+import com.card.nico.deposit.layers.core.ports.in.DepositPerformer;
 import com.card.nico.deposit.layers.core.ports.out.MealDepositStore;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
@@ -19,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 import static java.util.Objects.requireNonNull;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
@@ -29,15 +25,11 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 class MealDepositController {
 
     private final MealDepositStore mealDepositStore;
-    private final EmployeeStore employeeStore;
-    private final CompanyStore companyStore;
-    private final Function<Company, CompanyDepositPerformer> companyDepositPerformer;
+    private final DepositPerformer depositPerformer;
 
-    MealDepositController(MealDepositStore mealDepositStore, EmployeeStore employeeStore, CompanyStore companyStore) {
+    MealDepositController(MealDepositStore mealDepositStore, DepositPerformer depositPerformer) {
         this.mealDepositStore = requireNonNull(mealDepositStore);
-        this.employeeStore = requireNonNull(employeeStore);
-        this.companyStore = requireNonNull(companyStore);
-        this.companyDepositPerformer = CompanyMealDepositPerformer::new;
+        this.depositPerformer = requireNonNull(depositPerformer);
     }
 
     @SuppressWarnings("java:S1452")
@@ -85,28 +77,15 @@ class MealDepositController {
     @PostMapping
     @Transactional
     public ResponseEntity<?> create(@RequestBody CreateCommand command) {
-        String employeeName = command.employeeName();
-        String companyName = command.companyName();
-        Company company = companyStore.findByName(companyName)
-                .orElseThrow(() -> new CompanyNotFoundException(companyName));
-        Employee employee = employeeStore.findByName(employeeName)
-                .orElseThrow(() -> new EmployeeNotFoundException(employeeName));
-
-        Deposit deposit = doDepositAndUpdateCompanyBalance(command, company, employee, companyName);
+        MoneyAmount amount = MoneyAmount.of(command.amount(), command.currencyCode());
+        Deposit deposit = depositPerformer
+                .type("MEAL")
+                .from(command.companyName())
+                .to(command.employeeName())
+                .doDeposit(amount);
         return ResponseEntity.created(
                         linkTo(methodOn(MealDepositController.class).findById(deposit.getId())).toUri())
                 .build();
-    }
-
-    private Deposit doDepositAndUpdateCompanyBalance(CreateCommand command, Company company, Employee employee, String companyName) {
-        MoneyAmount amount = MoneyAmount.of(command.amount(), command.currencyCode());
-        Deposit deposit = companyDepositPerformer.apply(company)
-                .to(employee)
-                .doDeposit(amount);
-        deposit = mealDepositStore.save(deposit);
-
-        companyStore.save(new Company(companyName, company.balance().minus(amount), company.employees()));
-        return deposit;
     }
 
     record CreateCommand(String companyName, String employeeName, double amount, String currencyCode) {}

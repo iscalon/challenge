@@ -1,29 +1,52 @@
 package com.card.nico.deposit.layers.core.ports.in;
 
 import com.card.nico.deposit.layers.core.*;
+import com.card.nico.deposit.layers.core.annotations.DomainComponent;
+import com.card.nico.deposit.layers.core.exceptions.CompanyNotFoundException;
+import com.card.nico.deposit.layers.core.exceptions.EmployeeNotFoundException;
+import com.card.nico.deposit.layers.core.ports.out.CompanyStore;
+import com.card.nico.deposit.layers.core.ports.out.EmployeeStore;
+import com.card.nico.deposit.layers.core.ports.out.GiftDepositStore;
 
 import java.time.LocalDate;
 
 import static java.util.Objects.requireNonNull;
 
-public class GiftDepositStrategy implements DepositStrategy {
+@DomainComponent
+class GiftDepositStrategy implements DepositStrategy {
 
-    private final Company company;
-    private final Employee employee;
+    private final CompanyStore companyStore;
+    private final EmployeeStore employeeStore;
+    private final GiftDepositStore depositStore;
 
-    public GiftDepositStrategy(Company company, Employee employee) {
-        this.company = requireNonNull(company);
-        this.employee = requireNonNull(employee);
+    public GiftDepositStrategy(CompanyStore companyStore, EmployeeStore employeeStore, GiftDepositStore depositStore) {
+        this.companyStore = requireNonNull(companyStore);
+        this.employeeStore = requireNonNull(employeeStore);
+        this.depositStore = requireNonNull(depositStore);
     }
 
     @Override
-    public Deposit createDeposit(MoneyAmount amount) {
-        assertSufficientAmountAndCompanyBalance(company, amount);
-        return new GiftDeposit(-1L, amount, company, employee, creationDate(), expirationDate());
+    public Deposit createDeposit(String companyName, String employeeName, MoneyAmount amount) {
+        Company company = companyStore
+                .findByName(companyName)
+                .orElseThrow(() -> new CompanyNotFoundException(companyName));
+        Employee employee = employeeStore
+                .findByName(employeeName)
+                .orElseThrow(() -> new EmployeeNotFoundException(employeeName));
+        DepositValidator
+                .company(company)
+                .depositAmount(amount)
+                .assertAmountAndCompanyBalanceAreSufficient();
+        return depositStore.save(new GiftDeposit(-1L, amount, company, employee, creationDate(), expirationDate()));
     }
 
     @Override
     public LocalDate expirationDate() {
         return LocalDate.now().plusDays(365);
+    }
+
+    @Override
+    public String depositType() {
+        return "GIFT";
     }
 }

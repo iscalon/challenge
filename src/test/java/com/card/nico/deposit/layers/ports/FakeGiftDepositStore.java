@@ -5,11 +5,11 @@ import com.card.nico.deposit.layers.core.ports.out.GiftDepositStore;
 
 import java.util.*;
 
-class FakeGiftDepositStore extends GiftDepositStore {
+public class FakeGiftDepositStore extends GiftDepositStore {
 
     private final Collection<Deposit> deposits;
 
-    FakeGiftDepositStore() {
+    public FakeGiftDepositStore() {
         this.deposits = new HashSet<>();
     }
 
@@ -34,5 +34,9 @@ class FakeGiftDepositStore extends GiftDepositStore {
     @Override
     public List<Deposit> findAll() {
         return List.copyOf(deposits);
+    }
+
+    public void clear() {
+        this.deposits.clear();
     }
 }
