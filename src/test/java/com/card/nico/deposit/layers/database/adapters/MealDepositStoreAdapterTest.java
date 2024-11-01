@@ -1,7 +1,7 @@
 package com.card.nico.deposit.layers.database.adapters;
 
 import com.card.nico.deposit.layers.core.*;
-import com.card.nico.deposit.layers.core.ports.in.DepositPerformer;
+import com.card.nico.deposit.layers.core.ports.in.DepositUseCase;
 import com.card.nico.deposit.layers.core.ports.out.CompanyStore;
 import com.card.nico.deposit.layers.core.ports.out.EmployeeStore;
 import com.card.nico.deposit.layers.core.ports.out.MealDepositStore;
@@ -25,7 +25,7 @@ class MealDepositStoreAdapterTest {
     private MealDepositStore mealDepositStoreService;
 
     @Inject
-    private DepositPerformer depositPerformer;
+    private DepositUseCase depositUseCase;
 
     @Inject
     private EmployeeStore employeeStore;
@@ -54,7 +54,7 @@ class MealDepositStoreAdapterTest {
         Company company = new Company("Total", totalBalance, Set.of(john));
         companyStore.save(company);
 
-        return depositPerformer.type("MEAL")
+        return depositUseCase.type("MEAL")
                 .from(company.name())
                 .to(john.name())
                 .doDeposit(amount);

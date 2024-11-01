@@ -78,9 +78,9 @@ class DepositStoreTest {
         Company company = new Company("Total", totalBalance, Set.of(john));
         companyStore.save(company);
         employeeStore.setCompany(company);
-        DepositPerformer depositPerformer = new DepositPerformerFactory(depositStrategies, companyStore,
+        DepositUseCase depositUseCase = new DepositPerformerFactory(depositStrategies, companyStore,
                 new FakeTransactionalPort());
-        return depositPerformer
+        return depositUseCase
                 .type("GIFT")
                 .from(company.name())
                 .to(john.name())
@@ -94,9 +94,9 @@ class DepositStoreTest {
         Company company = new Company("Total", totalBalance, Set.of(john));
         companyStore.save(company);
         employeeStore.setCompany(company);
-        DepositPerformer depositPerformer = new DepositPerformerFactory(depositStrategies, companyStore,
+        DepositUseCase depositUseCase = new DepositPerformerFactory(depositStrategies, companyStore,
                 new FakeTransactionalPort());
-        return depositPerformer
+        return depositUseCase
                 .type("MEAL")
                 .from(company.name())
                 .to(john.name())

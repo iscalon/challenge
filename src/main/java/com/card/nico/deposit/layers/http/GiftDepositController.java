@@ -3,7 +3,7 @@ package com.card.nico.deposit.layers.http;
 import com.card.nico.deposit.layers.core.Deposit;
 import com.card.nico.deposit.layers.core.GiftDeposit;
 import com.card.nico.deposit.layers.core.MoneyAmount;
-import com.card.nico.deposit.layers.core.ports.in.DepositPerformer;
+import com.card.nico.deposit.layers.core.ports.in.DepositUseCase;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.hateoas.CollectionModel;
@@ -22,16 +22,16 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 @RequestMapping("/gift-deposits")
 class GiftDepositController {
 
-    private final DepositPerformer depositPerformer;
+    private final DepositUseCase depositUseCase;
 
-    GiftDepositController(DepositPerformer depositPerformer) {
-        this.depositPerformer = requireNonNull(depositPerformer);
+    GiftDepositController(DepositUseCase depositUseCase) {
+        this.depositUseCase = requireNonNull(depositUseCase);
     }
 
     @SuppressWarnings("java:S1452")
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id) {
-        Optional<Representation> giftDepositRepresentation = this.depositPerformer
+        Optional<Representation> giftDepositRepresentation = this.depositUseCase
                 .type("GIFT")
                 .findById(id)
                 .map(GiftDeposit.class::cast)
@@ -43,7 +43,7 @@ class GiftDepositController {
     @SuppressWarnings("java:S1452")
     @GetMapping
     public ResponseEntity<?> list() {
-        List<Representation> representations = this.depositPerformer
+        List<Representation> representations = this.depositUseCase
                 .type("GIFT").findAll().stream()
                 .map(GiftDeposit.class::cast)
                 .map(Representation::new)
@@ -60,7 +60,7 @@ class GiftDepositController {
     @SuppressWarnings("java:S1452")
     @GetMapping("/employee/{name}")
     public ResponseEntity<?> findByEmployee(@PathVariable("name") String employeeName) {
-        List<Representation> representations = this.depositPerformer.type("GIFT")
+        List<Representation> representations = this.depositUseCase.type("GIFT")
                 .findByEmployeeName(employeeName).stream()
                 .map(GiftDeposit.class::cast)
                 .map(Representation::new)
@@ -77,7 +77,7 @@ class GiftDepositController {
     @PostMapping
     public ResponseEntity<?> create(@RequestBody CreateCommand command) {
         MoneyAmount amount = MoneyAmount.of(command.amount(), command.currencyCode());
-        Deposit deposit = depositPerformer
+        Deposit deposit = depositUseCase
                 .type("GIFT")
                 .from(command.companyName())
                 .to(command.employeeName())

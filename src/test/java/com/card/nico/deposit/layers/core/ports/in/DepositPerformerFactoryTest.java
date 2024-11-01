@@ -53,9 +53,9 @@ class DepositPerformerFactoryTest {
         companyStore.save(company);
         employeeStore.setCompany(company);
         MoneyAmount giftAmount = MoneyAmount.of(500d, EURO_CODE);
-        DepositPerformer depositPerformer = new DepositPerformerFactory(depositStrategies, companyStore,
+        DepositUseCase depositUseCase = new DepositPerformerFactory(depositStrategies, companyStore,
                 new FakeTransactionalPort());
-        Deposit deposit = depositPerformer
+        Deposit deposit = depositUseCase
                 .type("GIFT")
                 .from(company.name())
                 .to(john.name())
@@ -86,9 +86,9 @@ class DepositPerformerFactoryTest {
         companyStore.save(company);
         employeeStore.setCompany(company);
         MoneyAmount giftAmount = MoneyAmount.of(500d, EURO_CODE);
-        DepositPerformer depositPerformer = new DepositPerformerFactory(depositStrategies, companyStore,
+        DepositUseCase depositUseCase = new DepositPerformerFactory(depositStrategies, companyStore,
                 new FakeTransactionalPort());
-        Deposit deposit = depositPerformer
+        Deposit deposit = depositUseCase
                 .type("MEAL")
                 .from(company.name())
                 .to(john.name())
@@ -119,9 +119,9 @@ class DepositPerformerFactoryTest {
         companyStore.save(company);
         employeeStore.setCompany(company);
         MoneyAmount giftAmount = MoneyAmount.of(500d, EURO_CODE);
-        DepositPerformer depositPerformer = new DepositPerformerFactory(depositStrategies, companyStore,
+        DepositUseCase depositUseCase = new DepositPerformerFactory(depositStrategies, companyStore,
                 new FakeTransactionalPort());
-        CompanyToEmployeeDepositKindPerformer toEmployeeDepositPerformer = depositPerformer
+        CompanyToEmployeeDepositKindPerformer toEmployeeDepositPerformer = depositUseCase
                 .type("GIFT")
                 .from(company.name())
                 .to(john.name());
@@ -142,9 +142,9 @@ class DepositPerformerFactoryTest {
         companyStore.save(company);
         employeeStore.setCompany(company);
         MoneyAmount mealAmount = MoneyAmount.of(500d, EURO_CODE);
-        DepositPerformer depositPerformer = new DepositPerformerFactory(depositStrategies, companyStore,
+        DepositUseCase depositUseCase = new DepositPerformerFactory(depositStrategies, companyStore,
                 new FakeTransactionalPort());
-        CompanyToEmployeeDepositKindPerformer toEmployeeDepositPerformer = depositPerformer
+        CompanyToEmployeeDepositKindPerformer toEmployeeDepositPerformer = depositUseCase
                 .type("MEAL")
                 .from(company.name())
                 .to(john.name());
@@ -166,9 +166,9 @@ class DepositPerformerFactoryTest {
         companyStore.save(company);
         employeeStore.setCompany(company);
         MoneyAmount giftAmount = MoneyAmount.of(0d, EURO_CODE);
-        DepositPerformer depositPerformer = new DepositPerformerFactory(depositStrategies, companyStore,
+        DepositUseCase depositUseCase = new DepositPerformerFactory(depositStrategies, companyStore,
                 new FakeTransactionalPort());
-        CompanyToEmployeeDepositKindPerformer toEmployeeDepositPerformer = depositPerformer.type("GIFT")
+        CompanyToEmployeeDepositKindPerformer toEmployeeDepositPerformer = depositUseCase.type("GIFT")
                 .from(company.name())
                 .to(john.name());
         assertThatThrownBy(() -> toEmployeeDepositPerformer
@@ -187,9 +187,9 @@ class DepositPerformerFactoryTest {
         companyStore.save(company);
         employeeStore.setCompany(company);
         MoneyAmount mealAmount = MoneyAmount.of(0d, EURO_CODE);
-        DepositPerformer depositPerformer = new DepositPerformerFactory(depositStrategies, companyStore,
+        DepositUseCase depositUseCase = new DepositPerformerFactory(depositStrategies, companyStore,
                 new FakeTransactionalPort());
-        CompanyToEmployeeDepositKindPerformer toEmployeeDepositPerformer = depositPerformer.type("MEAL")
+        CompanyToEmployeeDepositKindPerformer toEmployeeDepositPerformer = depositUseCase.type("MEAL")
                 .from(company.name())
                 .to(john.name());
 

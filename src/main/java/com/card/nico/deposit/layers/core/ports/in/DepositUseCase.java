@@ -1,6 +1,6 @@
 package com.card.nico.deposit.layers.core.ports.in;
 
-public interface DepositPerformer {
+public interface DepositUseCase {
 
     DepositKindPerformer type(String depositType);
 }

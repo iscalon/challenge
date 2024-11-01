@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 import static java.util.Objects.requireNonNull;
 
 @UseCase
-class DepositPerformerFactory implements DepositPerformer {
+class DepositPerformerFactory implements DepositUseCase {
 
     private final Map<String, DepositStrategy> depositStrategies;
     private final CompanyStore companyStore;
