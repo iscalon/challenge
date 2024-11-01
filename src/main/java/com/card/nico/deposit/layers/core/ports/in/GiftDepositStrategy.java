@@ -9,6 +9,8 @@ import com.card.nico.deposit.layers.core.ports.out.EmployeeStore;
 import com.card.nico.deposit.layers.core.ports.out.GiftDepositStore;
 
 import java.time.LocalDate;
+import java.util.List;
+import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
@@ -43,6 +45,21 @@ class GiftDepositStrategy implements DepositStrategy {
     @Override
     public LocalDate expirationDate() {
         return LocalDate.now().plusDays(365);
+    }
+
+    @Override
+    public <T extends Deposit> Optional<T> findById(Long id) {
+        return depositStore.findById(id);
+    }
+
+    @Override
+    public <T extends Deposit> List<T> findByEmployeeName(String employeeName) {
+        return depositStore.findByEmployeeName(employeeName);
+    }
+
+    @Override
+    public <T extends Deposit> List<T> findAll() {
+        return depositStore.findAll();
     }
 
     @Override

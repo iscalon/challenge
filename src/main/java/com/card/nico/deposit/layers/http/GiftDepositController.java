@@ -4,7 +4,6 @@ import com.card.nico.deposit.layers.core.Deposit;
 import com.card.nico.deposit.layers.core.GiftDeposit;
 import com.card.nico.deposit.layers.core.MoneyAmount;
 import com.card.nico.deposit.layers.core.ports.in.DepositPerformer;
-import com.card.nico.deposit.layers.core.ports.out.GiftDepositStore;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.hateoas.CollectionModel;
@@ -23,18 +22,18 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 @RequestMapping("/gift-deposits")
 class GiftDepositController {
 
-    private final GiftDepositStore giftDepositStore;
     private final DepositPerformer depositPerformer;
 
-    GiftDepositController(GiftDepositStore giftDepositStore, DepositPerformer depositPerformer) {
-        this.giftDepositStore = requireNonNull(giftDepositStore);
+    GiftDepositController(DepositPerformer depositPerformer) {
         this.depositPerformer = requireNonNull(depositPerformer);
     }
 
     @SuppressWarnings("java:S1452")
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id) {
-        Optional<Representation> giftDepositRepresentation = this.giftDepositStore.findById(id)
+        Optional<Representation> giftDepositRepresentation = this.depositPerformer
+                .type("GIFT")
+                .findById(id)
                 .map(GiftDeposit.class::cast)
                 .map(Representation::new);
 
@@ -44,7 +43,8 @@ class GiftDepositController {
     @SuppressWarnings("java:S1452")
     @GetMapping
     public ResponseEntity<?> list() {
-        List<Representation> representations = this.giftDepositStore.findAll().stream()
+        List<Representation> representations = this.depositPerformer
+                .type("GIFT").findAll().stream()
                 .map(GiftDeposit.class::cast)
                 .map(Representation::new)
                 .toList();
@@ -60,7 +60,8 @@ class GiftDepositController {
     @SuppressWarnings("java:S1452")
     @GetMapping("/employee/{name}")
     public ResponseEntity<?> findByEmployee(@PathVariable("name") String employeeName) {
-        List<Representation> representations = this.giftDepositStore.findByEmployeeName(employeeName).stream()
+        List<Representation> representations = this.depositPerformer.type("GIFT")
+                .findByEmployeeName(employeeName).stream()
                 .map(GiftDeposit.class::cast)
                 .map(Representation::new)
                 .toList();

@@ -5,6 +5,8 @@ import com.card.nico.deposit.layers.core.MoneyAmount;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
 
 public interface DepositStrategy {
 
@@ -17,4 +19,10 @@ public interface DepositStrategy {
     default LocalDateTime creationDate() {
         return LocalDateTime.now();
     }
+
+    <T extends Deposit> Optional<T> findById(Long id);
+
+    <T extends Deposit> List<T> findAll();
+
+    <T extends Deposit> List<T> findByEmployeeName(String employeeName);
 }

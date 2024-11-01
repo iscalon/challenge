@@ -11,6 +11,8 @@ import com.card.nico.deposit.layers.core.ports.out.MealDepositStore;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.temporal.TemporalAdjusters;
+import java.util.List;
+import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
 
@@ -46,6 +48,21 @@ class MealDepositStrategy implements DepositStrategy {
     public LocalDate expirationDate() {
         int nextYear = LocalDate.now().getYear() + 1;
         return LocalDate.of(nextYear, Month.FEBRUARY, 1).with(TemporalAdjusters.lastDayOfMonth());
+    }
+
+    @Override
+    public <T extends Deposit> Optional<T> findById(Long id) {
+        return depositStore.findById(id);
+    }
+
+    @Override
+    public <T extends Deposit> List<T> findAll() {
+        return depositStore.findAll();
+    }
+
+    @Override
+    public <T extends Deposit> List<T> findByEmployeeName(String employeeName) {
+        return depositStore.findByEmployeeName(employeeName);
     }
 
     @Override

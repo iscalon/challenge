@@ -69,6 +69,23 @@ class DepositPerformerFactory implements DepositPerformer {
                     .orElseThrow(() -> new CompanyNotFoundException(companyName));
             return new InnerCompanyDepositKindPerformer(companyStore, depositStrategy, company, transactionPort);
         }
+
+        @Override
+        public Optional<Deposit> findById(Long id) {
+            return transactionPort.executeTransactionally(() ->
+                    depositStrategy.findById(id));
+        }
+
+        @Override
+        public <T extends Deposit> List<T> findAll() {
+            return transactionPort.executeTransactionally(depositStrategy::findAll);
+        }
+
+        @Override
+        public <T extends Deposit> List<T> findByEmployeeName(String employeeName) {
+            return transactionPort.executeTransactionally(() ->
+                    depositStrategy.findByEmployeeName(employeeName));
+        }
     }
 
     /**

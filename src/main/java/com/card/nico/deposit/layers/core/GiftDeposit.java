@@ -38,6 +38,6 @@ public record GiftDeposit(Long id, MoneyAmount amount, Company company, Employee
 
     @Override
     public String getType() {
-        return "gift";
+        return "GIFT";
     }
 }

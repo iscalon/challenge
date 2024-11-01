@@ -52,7 +52,7 @@ class DepositStoreTest {
         assertThat(giftDeposits)
                 .isNotEmpty()
                 .extracting(Deposit::getAmount, Deposit::getType)
-                .containsExactly(tuple(giftAmount, "gift"));
+                .containsExactly(tuple(giftAmount, "GIFT"));
     }
 
     @Test
@@ -68,7 +68,7 @@ class DepositStoreTest {
         assertThat(mealDeposits)
                 .isNotEmpty()
                 .extracting(Deposit::getAmount, Deposit::getType)
-                .containsExactly(tuple(mealAmount, "meal"));
+                .containsExactly(tuple(mealAmount, "MEAL"));
     }
 
     private Deposit createGiftDeposit(MoneyAmount amount) {

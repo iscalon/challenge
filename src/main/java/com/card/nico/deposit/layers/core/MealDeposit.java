@@ -38,6 +38,6 @@ public record MealDeposit(Long id, MoneyAmount amount, Company company, Employee
 
     @Override
     public String getType() {
-        return "meal";
+        return "MEAL";
     }
 }

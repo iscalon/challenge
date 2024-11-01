@@ -70,7 +70,7 @@ class DepositPerformerFactoryTest {
         assertThat(deposit.getAmount())
                 .isEqualTo(giftAmount);
         assertThat(deposit.getType())
-                .isEqualTo("gift");
+                .isEqualTo("GIFT");
         LocalDate depositCreationDate = deposit.getCreationDate().toLocalDate();
         assertThat(deposit.getExpirationDate())
                 .hasValue(depositCreationDate.plusDays(365));
@@ -103,7 +103,7 @@ class DepositPerformerFactoryTest {
         assertThat(deposit.getAmount())
                 .isEqualTo(giftAmount);
         assertThat(deposit.getType())
-                .isEqualTo("meal");
+                .isEqualTo("MEAL");
         LocalDate depositCreationDate = deposit.getCreationDate().toLocalDate();
         assertThat(deposit.getExpirationDate())
                 .hasValue(mealExpirationDate(depositCreationDate));
