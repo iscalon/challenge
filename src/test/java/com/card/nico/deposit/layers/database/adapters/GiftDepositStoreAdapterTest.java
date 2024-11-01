@@ -1,10 +1,9 @@
 package com.card.nico.deposit.layers.database.adapters;
 
 import com.card.nico.deposit.layers.core.*;
+import com.card.nico.deposit.layers.core.ports.in.CompanyUseCase;
 import com.card.nico.deposit.layers.core.ports.in.DepositUseCase;
-import com.card.nico.deposit.layers.core.ports.out.CompanyStore;
-import com.card.nico.deposit.layers.core.ports.out.DepositStore;
-import com.card.nico.deposit.layers.core.ports.out.EmployeeStore;
+import com.card.nico.deposit.layers.core.ports.in.EmployeeUseCase;
 import com.card.nico.deposit.layers.database.tooling.DBTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.DisplayName;
@@ -22,16 +21,13 @@ class GiftDepositStoreAdapterTest {
     private static final String EURO_CODE = "EUR";
 
     @Inject
-    private List<DepositStore> depositStores;
-
-    @Inject
     private DepositUseCase deposits;
 
     @Inject
-    private EmployeeStore employeeStore;
+    private EmployeeUseCase employees;
 
     @Inject
-    private CompanyStore companyStore;
+    private CompanyUseCase companies;
 
     @Test
     @DisplayName("Can store a core gift deposit")
@@ -49,10 +45,10 @@ class GiftDepositStoreAdapterTest {
 
     private Deposit createCoreGiftDeposit(MoneyAmount amount) {
         Employee john = new Employee("John");
-        employeeStore.save(john);
+        employees.save(john);
         MoneyAmount totalBalance = MoneyAmount.of(680000d, EURO_CODE);
         Company company = new Company("Total", totalBalance, Set.of(john));
-        companyStore.save(company);
+        companies.save(company);
         return deposits.type("GIFT")
                 .from(company.name())
                 .to(john.name())

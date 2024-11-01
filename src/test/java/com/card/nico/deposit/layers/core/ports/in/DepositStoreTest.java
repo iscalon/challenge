@@ -24,10 +24,13 @@ class DepositStoreTest {
     private final FakeEmployeeStore employeeStore = new FakeEmployeeStore();
     private final FakeGiftDepositStore giftDepositStore = new FakeGiftDepositStore();
     private final FakeMealDepositStore mealDepositStore = new FakeMealDepositStore();
+    private final List<DepositStore> depositStores = List.of(giftDepositStore, mealDepositStore);
     private final List<DepositStrategy> depositStrategies = List.of(
-            new GiftDepositStrategy(companyStore, employeeStore, List.of(giftDepositStore)),
-            new MealDepositStrategy(companyStore, employeeStore, List.of(mealDepositStore))
+            new GiftDepositStrategy(companyStore, employeeStore, depositStores),
+            new MealDepositStrategy(companyStore, employeeStore, depositStores)
     );
+    private final DepositUseCase deposits = new DepositPerformerFactory(depositStrategies, companyStore,
+            new FakeTransactionalPort());
 
     @BeforeEach
     void setUp() {
@@ -42,12 +45,9 @@ class DepositStoreTest {
     @DisplayName("Can store a gift deposit")
     void test01() {
         MoneyAmount giftAmount = MoneyAmount.of(660, EURO_CODE);
-        Deposit giftDeposit = createGiftDeposit(giftAmount);
+        makeGiftDeposit(giftAmount);
 
-        DepositStore depositStore = new FakeGiftDepositStore();
-        depositStore.save(giftDeposit);
-
-        List<Deposit> giftDeposits = depositStore.findAll();
+        List<Deposit> giftDeposits = deposits.type("GIFT").findAll();
         assertThat(giftDeposits)
                 .isNotEmpty()
                 .extracting(Deposit::getAmount, Deposit::getType)
@@ -58,44 +58,37 @@ class DepositStoreTest {
     @DisplayName("Can store a meal deposit")
     void test02() {
         MoneyAmount mealAmount = MoneyAmount.of(660, EURO_CODE);
-        Deposit mealDeposit = createMealDeposit(mealAmount);
+        makeMealDeposit(mealAmount);
 
-        DepositStore depositStore = new FakeMealDepositStore();
-        depositStore.save(mealDeposit);
-
-        List<Deposit> mealDeposits = depositStore.findAll();
+        List<Deposit> mealDeposits = deposits.type("MEAL").findAll();
         assertThat(mealDeposits)
                 .isNotEmpty()
                 .extracting(Deposit::getAmount, Deposit::getType)
                 .containsExactly(tuple(mealAmount, "MEAL"));
     }
 
-    private Deposit createGiftDeposit(MoneyAmount amount) {
+    private void makeGiftDeposit(MoneyAmount amount) {
         Employee john = new Employee("John");
         employeeStore.save(john);
         MoneyAmount totalBalance = MoneyAmount.of(680000d, EURO_CODE);
         Company company = new Company("Total", totalBalance, Set.of(john));
         companyStore.save(company);
         employeeStore.setCompany(company);
-        DepositUseCase depositUseCase = new DepositPerformerFactory(depositStrategies, companyStore,
-                new FakeTransactionalPort());
-        return depositUseCase
+        deposits
                 .type("GIFT")
                 .from(company.name())
                 .to(john.name())
                 .doDeposit(amount);
     }
 
-    private Deposit createMealDeposit(MoneyAmount amount) {
+    private void makeMealDeposit(MoneyAmount amount) {
         Employee john = new Employee("John");
         employeeStore.save(john);
         MoneyAmount totalBalance = MoneyAmount.of(680000d, EURO_CODE);
         Company company = new Company("Total", totalBalance, Set.of(john));
         companyStore.save(company);
         employeeStore.setCompany(company);
-        DepositUseCase depositUseCase = new DepositPerformerFactory(depositStrategies, companyStore,
-                new FakeTransactionalPort());
-        return depositUseCase
+        deposits
                 .type("MEAL")
                 .from(company.name())
                 .to(john.name())
