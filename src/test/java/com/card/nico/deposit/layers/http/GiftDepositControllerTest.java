@@ -81,7 +81,7 @@ class GiftDepositControllerTest {
         employees.save(new Employee(employeeName));
         Employee employee = employees.findByName(employeeName).orElseThrow();
         companies.save(new Company(
-                "Sony",
+                companyName,
                 MoneyAmount.of(amount.amount().add(BigDecimal.TEN).doubleValue(), amount.currency().getCurrencyCode()),
                 Set.of(employee)));
         Company company = companies.findByName(companyName).orElseThrow();
