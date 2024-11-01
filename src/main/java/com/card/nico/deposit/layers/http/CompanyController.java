@@ -5,8 +5,8 @@ import com.card.nico.deposit.layers.core.Employee;
 import com.card.nico.deposit.layers.core.MoneyAmount;
 import com.card.nico.deposit.layers.core.exceptions.CompanyNotFoundException;
 import com.card.nico.deposit.layers.core.exceptions.EmployeeNotFoundException;
-import com.card.nico.deposit.layers.core.ports.out.CompanyStore;
-import com.card.nico.deposit.layers.core.ports.out.EmployeeStore;
+import com.card.nico.deposit.layers.core.ports.in.CompanyUseCase;
+import com.card.nico.deposit.layers.core.ports.in.EmployeeUseCase;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
@@ -31,18 +31,18 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 @RequestMapping("/companies")
 class CompanyController {
 
-    private final CompanyStore companyStore;
-    private final EmployeeStore employeeStore;
+    private final CompanyUseCase companies;
+    private final EmployeeUseCase employees;
 
-    CompanyController(CompanyStore companyStore, EmployeeStore employeeStore) {
-        this.companyStore = requireNonNull(companyStore);
-        this.employeeStore = requireNonNull(employeeStore);
+    CompanyController(CompanyUseCase companies, EmployeeUseCase employees) {
+        this.companies = requireNonNull(companies);
+        this.employees = requireNonNull(employees);
     }
 
     @SuppressWarnings("java:S1452")
     @GetMapping("/{name}")
     public ResponseEntity<?> findByName(@PathVariable String name) {
-        Optional<Representation> companyRepresentation = this.companyStore.findByName(name)
+        Optional<Representation> companyRepresentation = this.companies.findByName(name)
                 .map(Representation::new);
 
         return ResponseEntity.of(companyRepresentation);
@@ -51,7 +51,7 @@ class CompanyController {
     @SuppressWarnings("java:S1452")
     @GetMapping
     public ResponseEntity<?> list() {
-        List<Representation> representations = this.companyStore.findAll().stream()
+        List<Representation> representations = this.companies.findAll().stream()
                 .map(Representation::new)
                 .toList();
 
@@ -67,10 +67,10 @@ class CompanyController {
     @PostMapping
     public ResponseEntity<?> create(@RequestBody CreateCommand command) {
         Set<String> employeesNames = Stream.of(command.employeesNames()).collect(Collectors.toSet());
-        Set<Employee> employees = findOrCreateEmployees(employeesNames);
+        Set<Employee> companyEmployees = findOrCreateEmployees(employeesNames);
 
         String companyName = command.companyName();
-        companyStore.save(new Company(companyName, MoneyAmount.of(command.amount(), command.currencyCode()), employees));
+        companies.save(new Company(companyName, MoneyAmount.of(command.amount(), command.currencyCode()), companyEmployees));
         return ResponseEntity.created(
                 linkTo(methodOn(CompanyController.class).findByName(companyName)).toUri())
                 .build();
@@ -80,14 +80,14 @@ class CompanyController {
     @PutMapping("/company/{companyName}/employee")
     public ResponseEntity<?> addEmployee(@PathVariable String companyName, @RequestBody EmployeeCommand command) {
         String employeeName = command.employeeName();
-        Employee employee = employeeStore.findByName(employeeName)
+        Employee employee = this.employees.findByName(employeeName)
                 .orElseThrow(() -> new EmployeeNotFoundException(employeeName));
-        Company company = companyStore.findByName(companyName)
+        Company company = companies.findByName(companyName)
                 .orElseThrow(() -> new CompanyNotFoundException(companyName));
 
         Set<Employee> companyEmployees = new HashSet<>(company.employees());
         companyEmployees.add(employee);
-        companyStore.save(new Company(companyName, company.balance(), companyEmployees));
+        companies.save(new Company(companyName, company.balance(), companyEmployees));
 
         return ResponseEntity.noContent().build();
     }
@@ -95,9 +95,9 @@ class CompanyController {
     private Set<Employee> findOrCreateEmployees(Set<String> employeesNames) {
         employeesNames.stream()
                 .map(Employee::new)
-                .forEach(employeeStore::save);
+                .forEach(employees::save);
         return employeesNames.stream()
-                .map(employeeStore::findByName)
+                .map(employees::findByName)
                 .flatMap(Optional::stream)
                 .collect(Collectors.toSet());
     }

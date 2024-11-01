@@ -2,7 +2,8 @@ package com.card.nico.deposit.layers.http;
 
 import com.card.nico.deposit.layers.core.Company;
 import com.card.nico.deposit.layers.core.Employee;
-import com.card.nico.deposit.layers.core.ports.out.EmployeeStore;
+import com.card.nico.deposit.layers.core.ports.in.CompanyUseCase;
+import com.card.nico.deposit.layers.core.ports.in.EmployeeUseCase;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.springframework.hateoas.CollectionModel;
@@ -21,16 +22,18 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 @RequestMapping("/employees")
 class EmployeeController {
 
-    private final EmployeeStore employeeStore;
+    private final EmployeeUseCase employees;
+    private final CompanyUseCase companies;
 
-    EmployeeController(EmployeeStore employeeStore) {
-        this.employeeStore = requireNonNull(employeeStore);
+    EmployeeController(EmployeeUseCase employees, CompanyUseCase companies) {
+        this.employees = requireNonNull(employees);
+        this.companies = requireNonNull(companies);
     }
 
     @SuppressWarnings("java:S1452")
     @GetMapping("/{name}")
     public ResponseEntity<?> findByName(@PathVariable String name) {
-        Optional<Representation> employeeRepresentation = this.employeeStore.findByName(name)
+        Optional<Representation> employeeRepresentation = this.employees.findByName(name)
                 .map(Representation::new);
 
         return ResponseEntity.of(employeeRepresentation);
@@ -39,7 +42,7 @@ class EmployeeController {
     @SuppressWarnings("java:S1452")
     @GetMapping
     public ResponseEntity<?> list() {
-        List<Representation> representations = this.employeeStore.findAll().stream()
+        List<Representation> representations = this.employees.findAll().stream()
                 .map(Representation::new)
                 .toList();
 
@@ -54,7 +57,7 @@ class EmployeeController {
     @PostMapping
     public ResponseEntity<?> create(@RequestBody CreateCommand command) {
         String employeeName = command.employeeName();
-        employeeStore.save(new Employee(employeeName));
+        employees.save(new Employee(employeeName));
         return ResponseEntity.created(
                         linkTo(methodOn(EmployeeController.class).findByName(employeeName)).toUri())
                 .build();
@@ -80,7 +83,7 @@ class EmployeeController {
         }
 
         private void addCompanyLink() {
-            Optional<String> companyName = employeeStore.findCompany(name)
+            Optional<String> companyName = companies.findByEmployeeName(name)
                     .map(Company::name);
 
             companyName.ifPresent(candidate ->
