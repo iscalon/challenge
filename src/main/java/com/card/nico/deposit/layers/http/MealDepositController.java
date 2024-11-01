@@ -23,6 +23,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 @RequestMapping("/meal-deposits")
 class MealDepositController {
 
+    private static final String HANDLED_DEPOSIT_TYPE = "MEAL";
+
     private final DepositUseCase depositUseCase;
 
     MealDepositController(DepositUseCase depositUseCase) {
@@ -33,7 +35,7 @@ class MealDepositController {
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id) {
         Optional<Representation> mealDepositRepresentation = this.depositUseCase
-                .type("MEAL")
+                .type(HANDLED_DEPOSIT_TYPE)
                 .findById(id)
                 .map(MealDeposit.class::cast)
                 .map(Representation::new);
@@ -45,7 +47,7 @@ class MealDepositController {
     @GetMapping
     public ResponseEntity<?> list() {
         List<Representation> representations = this.depositUseCase
-                .type("MEAL").findAll().stream()
+                .type(HANDLED_DEPOSIT_TYPE).findAll().stream()
                 .map(MealDeposit.class::cast)
                 .map(Representation::new)
                 .toList();
@@ -62,7 +64,7 @@ class MealDepositController {
     @GetMapping("/employee/{name}")
     public ResponseEntity<?> findByEmployee(@PathVariable("name") String employeeName) {
         List<Representation> representations = this.depositUseCase
-                .type("MEAL")
+                .type(HANDLED_DEPOSIT_TYPE)
                 .findByEmployeeName(employeeName).stream()
                 .map(MealDeposit.class::cast)
                 .map(Representation::new)
@@ -81,7 +83,7 @@ class MealDepositController {
     public ResponseEntity<?> create(@RequestBody CreateCommand command) {
         MoneyAmount amount = MoneyAmount.of(command.amount(), command.currencyCode());
         Deposit deposit = depositUseCase
-                .type("MEAL")
+                .type(HANDLED_DEPOSIT_TYPE)
                 .from(command.companyName())
                 .to(command.employeeName())
                 .doDeposit(amount);

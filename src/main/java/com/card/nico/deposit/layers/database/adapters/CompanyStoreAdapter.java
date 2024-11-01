@@ -4,6 +4,7 @@ import com.card.nico.deposit.layers.core.Company;
 import com.card.nico.deposit.layers.core.ports.out.CompanyStore;
 import com.card.nico.deposit.layers.database.CompanyRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -22,18 +23,21 @@ class CompanyStoreAdapter implements CompanyStore {
         this.companyEntityConverter = requireNonNull(companyEntityConverter);
     }
 
+    @Transactional
     @Override
     public void save(Company company) {
         requireNonNull(company);
         this.companyRepository.save(companyEntityConverter.fromCoreCompany(company));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Optional<Company> findByName(String name) {
         return companyRepository.findByName(name)
                 .map(companyEntityConverter::toCoreCompany);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Collection<Company> findAll() {
         return companyRepository

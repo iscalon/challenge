@@ -19,12 +19,13 @@ class MealDepositStoreAdapter implements DepositStore {
     private final MealDepositRepository mealDepositRepository;
     private final MealDepositEntityConverter mealDepositEntityConverter;
 
-    MealDepositStoreAdapter(MealDepositRepository mealDepositRepository, MealDepositEntityConverter mealDepositEntityConverter) {
+    MealDepositStoreAdapter(MealDepositRepository mealDepositRepository,
+                            MealDepositEntityConverter mealDepositEntityConverter) {
         this.mealDepositRepository = requireNonNull(mealDepositRepository);
         this.mealDepositEntityConverter = requireNonNull(mealDepositEntityConverter);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public Optional<MealDeposit> findById(Long id) {
         return mealDepositRepository.findById(id)
@@ -39,16 +40,19 @@ class MealDepositStoreAdapter implements DepositStore {
                 mealDepositRepository.save(giftDepositEntity));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public List<MealDeposit> findByEmployeeName(String employeeName) {
-        return mealDepositRepository.findByEmployeeName(employeeName).stream().map(mealDepositEntityConverter::toCoreMealDeposit).toList();
+        return mealDepositRepository.findByEmployeeName(employeeName).stream()
+                .map(mealDepositEntityConverter::toCoreMealDeposit).toList();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public List<MealDeposit> findAll() {
-        return mealDepositRepository.findAll().stream().map(mealDepositEntityConverter::toCoreMealDeposit).toList();
+        return mealDepositRepository.findAll().stream()
+                .map(mealDepositEntityConverter::toCoreMealDeposit)
+                .toList();
     }
 
     @Override

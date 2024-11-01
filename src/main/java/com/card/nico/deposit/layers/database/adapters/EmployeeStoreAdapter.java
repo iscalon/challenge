@@ -6,6 +6,7 @@ import com.card.nico.deposit.layers.core.ports.out.EmployeeStore;
 import com.card.nico.deposit.layers.database.EmployeeEntity;
 import com.card.nico.deposit.layers.database.EmployeeRepository;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collection;
 import java.util.Optional;
@@ -26,17 +27,20 @@ class EmployeeStoreAdapter implements EmployeeStore {
         this.companyEntityConverter = requireNonNull(companyEntityConverter);
     }
 
+    @Transactional
     @Override
     public void save(Employee employee) {
         employeeRepository.save(employeeEntityConverter.fromCoreEmployee(employee));
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Optional<Employee> findByName(String name) {
         return employeeRepository.findByName(name)
                 .map(employeeEntityConverter::toCoreEmployee);
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Collection<Employee> findAll() {
         return employeeRepository.findAll()
@@ -45,6 +49,7 @@ class EmployeeStoreAdapter implements EmployeeStore {
                 .collect(Collectors.toSet());
     }
 
+    @Transactional(readOnly = true)
     @Override
     public Optional<Company> findCompany(String employeeName) {
         return employeeRepository

@@ -22,6 +22,8 @@ import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 @RequestMapping("/gift-deposits")
 class GiftDepositController {
 
+    private static final String HANDLED_DEPOSIT_TYPE = "GIFT";
+
     private final DepositUseCase depositUseCase;
 
     GiftDepositController(DepositUseCase depositUseCase) {
@@ -32,7 +34,7 @@ class GiftDepositController {
     @GetMapping("/{id}")
     public ResponseEntity<?> findById(@PathVariable Long id) {
         Optional<Representation> giftDepositRepresentation = this.depositUseCase
-                .type("GIFT")
+                .type(HANDLED_DEPOSIT_TYPE)
                 .findById(id)
                 .map(GiftDeposit.class::cast)
                 .map(Representation::new);
@@ -44,7 +46,7 @@ class GiftDepositController {
     @GetMapping
     public ResponseEntity<?> list() {
         List<Representation> representations = this.depositUseCase
-                .type("GIFT").findAll().stream()
+                .type(HANDLED_DEPOSIT_TYPE).findAll().stream()
                 .map(GiftDeposit.class::cast)
                 .map(Representation::new)
                 .toList();
@@ -60,7 +62,7 @@ class GiftDepositController {
     @SuppressWarnings("java:S1452")
     @GetMapping("/employee/{name}")
     public ResponseEntity<?> findByEmployee(@PathVariable("name") String employeeName) {
-        List<Representation> representations = this.depositUseCase.type("GIFT")
+        List<Representation> representations = this.depositUseCase.type(HANDLED_DEPOSIT_TYPE)
                 .findByEmployeeName(employeeName).stream()
                 .map(GiftDeposit.class::cast)
                 .map(Representation::new)
@@ -78,7 +80,7 @@ class GiftDepositController {
     public ResponseEntity<?> create(@RequestBody CreateCommand command) {
         MoneyAmount amount = MoneyAmount.of(command.amount(), command.currencyCode());
         Deposit deposit = depositUseCase
-                .type("GIFT")
+                .type(HANDLED_DEPOSIT_TYPE)
                 .from(command.companyName())
                 .to(command.employeeName())
                 .doDeposit(amount);

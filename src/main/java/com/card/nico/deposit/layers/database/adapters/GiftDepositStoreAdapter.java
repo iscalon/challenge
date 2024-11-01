@@ -19,12 +19,13 @@ class GiftDepositStoreAdapter implements DepositStore {
     private final GiftDepositRepository giftDepositRepository;
     private final GiftDepositEntityConverter giftDepositEntityConverter;
 
-    GiftDepositStoreAdapter(GiftDepositRepository giftDepositRepository, GiftDepositEntityConverter giftDepositEntityConverter) {
+    GiftDepositStoreAdapter(GiftDepositRepository giftDepositRepository,
+                            GiftDepositEntityConverter giftDepositEntityConverter) {
         this.giftDepositRepository = requireNonNull(giftDepositRepository);
         this.giftDepositEntityConverter = requireNonNull(giftDepositEntityConverter);
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public Optional<GiftDeposit> findById(Long id) {
         return giftDepositRepository.findById(id)
@@ -39,16 +40,19 @@ class GiftDepositStoreAdapter implements DepositStore {
                 giftDepositRepository.save(giftDepositEntity));
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public List<GiftDeposit> findByEmployeeName(String employeeName) {
-        return giftDepositRepository.findByEmployeeName(employeeName).stream().map(giftDepositEntityConverter::toCoreGiftDeposit).toList();
+        return giftDepositRepository.findByEmployeeName(employeeName).stream()
+                .map(giftDepositEntityConverter::toCoreGiftDeposit).toList();
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     @Override
     public List<GiftDeposit> findAll() {
-        return giftDepositRepository.findAll().stream().map(giftDepositEntityConverter::toCoreGiftDeposit).toList();
+        return giftDepositRepository.findAll().stream()
+                .map(giftDepositEntityConverter::toCoreGiftDeposit)
+                .toList();
     }
 
     @Override
