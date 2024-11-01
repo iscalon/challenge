@@ -14,4 +14,6 @@ public interface DepositStore {
     <T extends Deposit> Optional<T> findById(Long id);
 
     <T extends Deposit> List<T> findByEmployeeName(String employeeName);
+
+    String type();
 }

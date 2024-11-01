@@ -5,13 +5,14 @@ import com.card.nico.deposit.layers.core.annotations.DomainComponent;
 import com.card.nico.deposit.layers.core.exceptions.CompanyNotFoundException;
 import com.card.nico.deposit.layers.core.exceptions.EmployeeNotFoundException;
 import com.card.nico.deposit.layers.core.ports.out.CompanyStore;
+import com.card.nico.deposit.layers.core.ports.out.DepositStore;
 import com.card.nico.deposit.layers.core.ports.out.EmployeeStore;
-import com.card.nico.deposit.layers.core.ports.out.MealDepositStore;
 
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.temporal.TemporalAdjusters;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
@@ -21,12 +22,17 @@ class MealDepositStrategy implements DepositStrategy {
 
     private final CompanyStore companyStore;
     private final EmployeeStore employeeStore;
-    private final MealDepositStore depositStore;
+    private final DepositStore depositStore;
 
-    public MealDepositStrategy(CompanyStore companyStore, EmployeeStore employeeStore, MealDepositStore depositStore) {
+    public MealDepositStrategy(CompanyStore companyStore, EmployeeStore employeeStore, List<DepositStore> depositStores) {
         this.companyStore = requireNonNull(companyStore);
         this.employeeStore = requireNonNull(employeeStore);
-        this.depositStore = requireNonNull(depositStore);
+        this.depositStore = Optional.ofNullable(depositStores)
+                .orElseGet(List::of)
+                .stream()
+                .filter(store -> Objects.equals(store.type(), depositType()))
+                .findAny()
+                .orElseThrow();
     }
 
     @Override
@@ -58,6 +64,11 @@ class MealDepositStrategy implements DepositStrategy {
     @Override
     public <T extends Deposit> List<T> findAll() {
         return depositStore.findAll();
+    }
+
+    @Override
+    public Deposit save(Deposit deposit) {
+        return depositStore.save(deposit);
     }
 
     @Override

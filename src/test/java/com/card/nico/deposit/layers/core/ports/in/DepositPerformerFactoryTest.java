@@ -30,8 +30,8 @@ class DepositPerformerFactoryTest {
     private final FakeGiftDepositStore giftDepositStore = new FakeGiftDepositStore();
     private final FakeMealDepositStore mealDepositStore = new FakeMealDepositStore();
     private final List<DepositStrategy> depositStrategies = List.of(
-            new GiftDepositStrategy(companyStore, employeeStore, giftDepositStore),
-            new MealDepositStrategy(companyStore, employeeStore, mealDepositStore)
+            new GiftDepositStrategy(companyStore, employeeStore, List.of(giftDepositStore)),
+            new MealDepositStrategy(companyStore, employeeStore, List.of(mealDepositStore))
     );
 
     @BeforeEach

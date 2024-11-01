@@ -1,11 +1,11 @@
 package com.card.nico.deposit.layers.ports;
 
 import com.card.nico.deposit.layers.core.Deposit;
-import com.card.nico.deposit.layers.core.ports.out.GiftDepositStore;
+import com.card.nico.deposit.layers.core.ports.out.DepositStore;
 
 import java.util.*;
 
-public class FakeGiftDepositStore extends GiftDepositStore {
+public class FakeGiftDepositStore implements DepositStore {
 
     private final Collection<Deposit> deposits;
 
@@ -34,6 +34,11 @@ public class FakeGiftDepositStore extends GiftDepositStore {
     @Override
     public List<Deposit> findAll() {
         return List.copyOf(deposits);
+    }
+
+    @Override
+    public String type() {
+        return "GIFT";
     }
 
     public void clear() {

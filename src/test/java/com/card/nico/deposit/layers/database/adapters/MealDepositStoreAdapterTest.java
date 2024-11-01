@@ -4,7 +4,6 @@ import com.card.nico.deposit.layers.core.*;
 import com.card.nico.deposit.layers.core.ports.in.DepositUseCase;
 import com.card.nico.deposit.layers.core.ports.out.CompanyStore;
 import com.card.nico.deposit.layers.core.ports.out.EmployeeStore;
-import com.card.nico.deposit.layers.core.ports.out.MealDepositStore;
 import com.card.nico.deposit.layers.database.tooling.DBTest;
 import jakarta.inject.Inject;
 import org.junit.jupiter.api.DisplayName;
@@ -22,10 +21,7 @@ class MealDepositStoreAdapterTest {
     private static final String EURO_CODE = "EUR";
 
     @Inject
-    private MealDepositStore mealDepositStoreService;
-
-    @Inject
-    private DepositUseCase depositUseCase;
+    private DepositUseCase deposits;
 
     @Inject
     private EmployeeStore employeeStore;
@@ -39,10 +35,10 @@ class MealDepositStoreAdapterTest {
     void test01() {
         MoneyAmount giftAmount = MoneyAmount.of(230, EURO_CODE);
         Deposit mealDeposit = createCoreMealDeposit(giftAmount);
-        mealDepositStoreService.save(mealDeposit);
+        deposits.type("MEAL").save(mealDeposit);
 
-        List<MealDeposit> giftDeposits = mealDepositStoreService.findAll();
-        assertThat(giftDeposits)
+        List<MealDeposit> mealDeposits = deposits.type("MEAL").findAll();
+        assertThat(mealDeposits)
                 .extracting(MealDeposit::getAmount)
                 .containsExactly(giftAmount);
     }
@@ -54,7 +50,7 @@ class MealDepositStoreAdapterTest {
         Company company = new Company("Total", totalBalance, Set.of(john));
         companyStore.save(company);
 
-        return depositUseCase.type("MEAL")
+        return deposits.type("MEAL")
                 .from(company.name())
                 .to(john.name())
                 .doDeposit(amount);

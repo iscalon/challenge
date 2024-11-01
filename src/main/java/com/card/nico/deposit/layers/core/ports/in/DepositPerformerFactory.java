@@ -86,6 +86,12 @@ class DepositPerformerFactory implements DepositUseCase {
             return transactionPort.executeTransactionally(() ->
                     depositStrategy.findByEmployeeName(employeeName));
         }
+
+        @Override
+        public Deposit save(Deposit deposit) {
+            return transactionPort.executeTransactionally(() ->
+                    depositStrategy.save(deposit));
+        }
     }
 
     /**

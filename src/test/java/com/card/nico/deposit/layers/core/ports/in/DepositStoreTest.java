@@ -5,7 +5,6 @@ import com.card.nico.deposit.layers.core.Deposit;
 import com.card.nico.deposit.layers.core.Employee;
 import com.card.nico.deposit.layers.core.MoneyAmount;
 import com.card.nico.deposit.layers.core.ports.out.DepositStore;
-import com.card.nico.deposit.layers.core.ports.out.MealDepositStore;
 import com.card.nico.deposit.layers.ports.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -26,8 +25,8 @@ class DepositStoreTest {
     private final FakeGiftDepositStore giftDepositStore = new FakeGiftDepositStore();
     private final FakeMealDepositStore mealDepositStore = new FakeMealDepositStore();
     private final List<DepositStrategy> depositStrategies = List.of(
-            new GiftDepositStrategy(companyStore, employeeStore, giftDepositStore),
-            new MealDepositStrategy(companyStore, employeeStore, mealDepositStore)
+            new GiftDepositStrategy(companyStore, employeeStore, List.of(giftDepositStore)),
+            new MealDepositStrategy(companyStore, employeeStore, List.of(mealDepositStore))
     );
 
     @BeforeEach
@@ -61,7 +60,7 @@ class DepositStoreTest {
         MoneyAmount mealAmount = MoneyAmount.of(660, EURO_CODE);
         Deposit mealDeposit = createMealDeposit(mealAmount);
 
-        MealDepositStore depositStore = new FakeMealDepositStore();
+        DepositStore depositStore = new FakeMealDepositStore();
         depositStore.save(mealDeposit);
 
         List<Deposit> mealDeposits = depositStore.findAll();

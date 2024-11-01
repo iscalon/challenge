@@ -5,11 +5,12 @@ import com.card.nico.deposit.layers.core.annotations.DomainComponent;
 import com.card.nico.deposit.layers.core.exceptions.CompanyNotFoundException;
 import com.card.nico.deposit.layers.core.exceptions.EmployeeNotFoundException;
 import com.card.nico.deposit.layers.core.ports.out.CompanyStore;
+import com.card.nico.deposit.layers.core.ports.out.DepositStore;
 import com.card.nico.deposit.layers.core.ports.out.EmployeeStore;
-import com.card.nico.deposit.layers.core.ports.out.GiftDepositStore;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static java.util.Objects.requireNonNull;
@@ -19,12 +20,17 @@ class GiftDepositStrategy implements DepositStrategy {
 
     private final CompanyStore companyStore;
     private final EmployeeStore employeeStore;
-    private final GiftDepositStore depositStore;
+    private final DepositStore depositStore;
 
-    public GiftDepositStrategy(CompanyStore companyStore, EmployeeStore employeeStore, GiftDepositStore depositStore) {
+    GiftDepositStrategy(CompanyStore companyStore, EmployeeStore employeeStore, List<DepositStore> depositStores) {
         this.companyStore = requireNonNull(companyStore);
         this.employeeStore = requireNonNull(employeeStore);
-        this.depositStore = requireNonNull(depositStore);
+        this.depositStore = Optional.ofNullable(depositStores)
+                .orElseGet(List::of)
+                .stream()
+                .filter(store -> Objects.equals(store.type(), depositType()))
+                .findAny()
+                .orElseThrow();
     }
 
     @Override
@@ -55,6 +61,11 @@ class GiftDepositStrategy implements DepositStrategy {
     @Override
     public <T extends Deposit> List<T> findByEmployeeName(String employeeName) {
         return depositStore.findByEmployeeName(employeeName);
+    }
+
+    @Override
+    public Deposit save(Deposit deposit) {
+        return depositStore.save(deposit);
     }
 
     @Override

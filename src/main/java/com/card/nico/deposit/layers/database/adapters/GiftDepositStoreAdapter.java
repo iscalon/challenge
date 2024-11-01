@@ -2,7 +2,7 @@ package com.card.nico.deposit.layers.database.adapters;
 
 import com.card.nico.deposit.layers.core.Deposit;
 import com.card.nico.deposit.layers.core.GiftDeposit;
-import com.card.nico.deposit.layers.core.ports.out.GiftDepositStore;
+import com.card.nico.deposit.layers.core.ports.out.DepositStore;
 import com.card.nico.deposit.layers.database.GiftDepositEntity;
 import com.card.nico.deposit.layers.database.GiftDepositRepository;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ import java.util.Optional;
 import static java.util.Objects.requireNonNull;
 
 @Component
-class GiftDepositStoreAdapter extends GiftDepositStore {
+class GiftDepositStoreAdapter implements DepositStore {
 
     private final GiftDepositRepository giftDepositRepository;
     private final GiftDepositEntityConverter giftDepositEntityConverter;
@@ -49,5 +49,10 @@ class GiftDepositStoreAdapter extends GiftDepositStore {
     @Override
     public List<GiftDeposit> findAll() {
         return giftDepositRepository.findAll().stream().map(giftDepositEntityConverter::toCoreGiftDeposit).toList();
+    }
+
+    @Override
+    public String type() {
+        return "GIFT";
     }
 }

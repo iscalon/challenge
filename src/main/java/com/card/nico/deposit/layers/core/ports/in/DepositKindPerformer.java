@@ -14,4 +14,6 @@ public interface DepositKindPerformer {
     <T extends Deposit> List<T> findAll();
 
     <T extends Deposit> List<T> findByEmployeeName(String employeeName);
+
+    Deposit save(Deposit deposit);
 }

@@ -2,7 +2,7 @@ package com.card.nico.deposit.layers.database.adapters;
 
 import com.card.nico.deposit.layers.core.Deposit;
 import com.card.nico.deposit.layers.core.MealDeposit;
-import com.card.nico.deposit.layers.core.ports.out.MealDepositStore;
+import com.card.nico.deposit.layers.core.ports.out.DepositStore;
 import com.card.nico.deposit.layers.database.MealDepositEntity;
 import com.card.nico.deposit.layers.database.MealDepositRepository;
 import org.springframework.stereotype.Component;
@@ -14,7 +14,7 @@ import java.util.Optional;
 import static java.util.Objects.requireNonNull;
 
 @Component
-class MealDepositStoreAdapter extends MealDepositStore {
+class MealDepositStoreAdapter implements DepositStore {
 
     private final MealDepositRepository mealDepositRepository;
     private final MealDepositEntityConverter mealDepositEntityConverter;
@@ -49,5 +49,10 @@ class MealDepositStoreAdapter extends MealDepositStore {
     @Override
     public List<MealDeposit> findAll() {
         return mealDepositRepository.findAll().stream().map(mealDepositEntityConverter::toCoreMealDeposit).toList();
+    }
+
+    @Override
+    public String type() {
+        return "MEAL";
     }
 }
