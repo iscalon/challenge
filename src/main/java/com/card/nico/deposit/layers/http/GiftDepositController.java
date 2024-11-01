@@ -1,95 +1,51 @@
 package com.card.nico.deposit.layers.http;
 
 import com.card.nico.deposit.layers.core.Deposit;
-import com.card.nico.deposit.layers.core.GiftDeposit;
 import com.card.nico.deposit.layers.core.MoneyAmount;
 import com.card.nico.deposit.layers.core.ports.in.DepositUseCase;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Optional;
-
-import static java.util.Objects.requireNonNull;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
 @RequestMapping("/gift-deposits")
-class GiftDepositController {
-
-    private static final String HANDLED_DEPOSIT_TYPE = "GIFT";
-
-    private final DepositUseCase depositUseCase;
+class GiftDepositController extends BaseDepositController {
 
     GiftDepositController(DepositUseCase depositUseCase) {
-        this.depositUseCase = requireNonNull(depositUseCase);
+        super(depositUseCase);
     }
 
-    @SuppressWarnings("java:S1452")
-    @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable Long id) {
-        Optional<Representation> giftDepositRepresentation = this.depositUseCase
-                .type(HANDLED_DEPOSIT_TYPE)
-                .findById(id)
-                .map(GiftDeposit.class::cast)
-                .map(Representation::new);
-
-        return ResponseEntity.of(giftDepositRepresentation);
+    @Override
+    Link createFindByEmployeeLinkAndAffordances(String employeeName) {
+        return linkTo(methodOn(GiftDepositController.class).findByEmployee(employeeName)).withSelfRel();
     }
 
-    @SuppressWarnings("java:S1452")
-    @GetMapping
-    public ResponseEntity<?> list() {
-        List<Representation> representations = this.depositUseCase
-                .type(HANDLED_DEPOSIT_TYPE).findAll().stream()
-                .map(GiftDeposit.class::cast)
-                .map(Representation::new)
-                .toList();
-
-        CollectionModel<Representation> collectionModel = CollectionModel.of(representations);
-        Link selfLink = linkTo(methodOn(GiftDepositController.class).list()).withSelfRel()
+    @Override
+    Link createListLinkAndAffordances() {
+        return linkTo(methodOn(GiftDepositController.class).list()).withSelfRel()
                 .andAffordance(afford(methodOn(GiftDepositController.class).create(null)));
-
-        return ResponseEntity.ok(
-                collectionModel.add(selfLink));
     }
 
-    @SuppressWarnings("java:S1452")
-    @GetMapping("/employee/{name}")
-    public ResponseEntity<?> findByEmployee(@PathVariable("name") String employeeName) {
-        List<Representation> representations = this.depositUseCase.type(HANDLED_DEPOSIT_TYPE)
-                .findByEmployeeName(employeeName).stream()
-                .map(GiftDeposit.class::cast)
-                .map(Representation::new)
-                .toList();
-
-        CollectionModel<Representation> collectionModel = CollectionModel.of(representations);
-        Link selfLink = linkTo(methodOn(GiftDepositController.class).findByEmployee(employeeName)).withSelfRel();
-
-        return ResponseEntity.ok(
-                collectionModel.add(selfLink));
+    @Override
+    WebMvcLinkBuilder getDepositFindByIdLinkBuilder(Deposit deposit) {
+        return linkTo(methodOn(GiftDepositController.class).findById(deposit.getId()));
     }
 
-    @SuppressWarnings("java:S1452")
-    @PostMapping
-    public ResponseEntity<?> create(@RequestBody CreateCommand command) {
-        MoneyAmount amount = MoneyAmount.of(command.amount(), command.currencyCode());
-        Deposit deposit = depositUseCase
-                .type(HANDLED_DEPOSIT_TYPE)
-                .from(command.companyName())
-                .to(command.employeeName())
-                .doDeposit(amount);
-        return ResponseEntity.created(
-                        linkTo(methodOn(GiftDepositController.class).findById(deposit.getId())).toUri())
-                .build();
+    @Override
+    Object createDepositRepresentation(Deposit deposit) {
+        return new Representation(deposit);
     }
 
-    record CreateCommand(String companyName, String employeeName, double amount, String currencyCode) {}
+    @Override
+    String handledDepositType() {
+        return "GIFT";
+    }
 
     static class Representation extends RepresentationModel<Representation> {
 
@@ -100,13 +56,13 @@ class GiftDepositController {
         private final String expirationDate;
         private final String creationDate;
 
-        Representation(GiftDeposit giftDeposit) {
+        Representation(Deposit giftDeposit) {
             this.id = giftDeposit.getId();
             this.companyName = giftDeposit.getCompany().name();
             this.employeeName = giftDeposit.getEmployee().name();
             MoneyAmount moneyAmount = giftDeposit.getAmount();
             this.amount = moneyAmount.amount() + moneyAmount.currency().getCurrencyCode();
-            this.expirationDate = "" + giftDeposit.expirationDate();
+            this.expirationDate = "" + giftDeposit.getExpirationDate().orElse(null);
             this.creationDate = "" + giftDeposit.getCreationDate();
 
             addSelfLink();

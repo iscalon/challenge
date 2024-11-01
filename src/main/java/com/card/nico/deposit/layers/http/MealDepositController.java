@@ -1,98 +1,52 @@
 package com.card.nico.deposit.layers.http;
 
 import com.card.nico.deposit.layers.core.Deposit;
-import com.card.nico.deposit.layers.core.MealDeposit;
 import com.card.nico.deposit.layers.core.MoneyAmount;
 import com.card.nico.deposit.layers.core.ports.in.DepositUseCase;
 import org.apache.commons.lang3.builder.EqualsBuilder;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.springframework.hateoas.CollectionModel;
 import org.springframework.hateoas.Link;
 import org.springframework.hateoas.RepresentationModel;
-import org.springframework.http.ResponseEntity;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Optional;
-
-import static java.util.Objects.requireNonNull;
 import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
 
 @RestController
 @RequestMapping("/meal-deposits")
-class MealDepositController {
+class MealDepositController extends BaseDepositController {
 
-    private static final String HANDLED_DEPOSIT_TYPE = "MEAL";
-
-    private final DepositUseCase depositUseCase;
 
     MealDepositController(DepositUseCase depositUseCase) {
-        this.depositUseCase = requireNonNull(depositUseCase);
+        super(depositUseCase);
     }
 
-    @SuppressWarnings("java:S1452")
-    @GetMapping("/{id}")
-    public ResponseEntity<?> findById(@PathVariable Long id) {
-        Optional<Representation> mealDepositRepresentation = this.depositUseCase
-                .type(HANDLED_DEPOSIT_TYPE)
-                .findById(id)
-                .map(MealDeposit.class::cast)
-                .map(Representation::new);
-
-        return ResponseEntity.of(mealDepositRepresentation);
+    @Override
+    Link createFindByEmployeeLinkAndAffordances(String employeeName) {
+        return linkTo(methodOn(MealDepositController.class).findByEmployee(employeeName)).withSelfRel();
     }
 
-    @SuppressWarnings("java:S1452")
-    @GetMapping
-    public ResponseEntity<?> list() {
-        List<Representation> representations = this.depositUseCase
-                .type(HANDLED_DEPOSIT_TYPE).findAll().stream()
-                .map(MealDeposit.class::cast)
-                .map(Representation::new)
-                .toList();
-
-        CollectionModel<Representation> collectionModel = CollectionModel.of(representations);
-        Link selfLink = linkTo(methodOn(MealDepositController.class).list()).withSelfRel()
+    @Override
+    Link createListLinkAndAffordances() {
+        return linkTo(methodOn(MealDepositController.class).list()).withSelfRel()
                 .andAffordance(afford(methodOn(MealDepositController.class).create(null)));
-
-        return ResponseEntity.ok(
-                collectionModel.add(selfLink));
     }
 
-    @SuppressWarnings("java:S1452")
-    @GetMapping("/employee/{name}")
-    public ResponseEntity<?> findByEmployee(@PathVariable("name") String employeeName) {
-        List<Representation> representations = this.depositUseCase
-                .type(HANDLED_DEPOSIT_TYPE)
-                .findByEmployeeName(employeeName).stream()
-                .map(MealDeposit.class::cast)
-                .map(Representation::new)
-                .toList();
-
-        CollectionModel<Representation> collectionModel = CollectionModel.of(representations);
-        Link selfLink = linkTo(methodOn(MealDepositController.class).findByEmployee(employeeName)).withSelfRel();
-
-        return ResponseEntity.ok(
-                collectionModel.add(selfLink));
+    @Override
+    WebMvcLinkBuilder getDepositFindByIdLinkBuilder(Deposit deposit) {
+        return linkTo(methodOn(MealDepositController.class).findById(deposit.getId()));
     }
 
-    @SuppressWarnings("java:S1452")
-    @PostMapping
-    @Transactional
-    public ResponseEntity<?> create(@RequestBody CreateCommand command) {
-        MoneyAmount amount = MoneyAmount.of(command.amount(), command.currencyCode());
-        Deposit deposit = depositUseCase
-                .type(HANDLED_DEPOSIT_TYPE)
-                .from(command.companyName())
-                .to(command.employeeName())
-                .doDeposit(amount);
-        return ResponseEntity.created(
-                        linkTo(methodOn(MealDepositController.class).findById(deposit.getId())).toUri())
-                .build();
+    @Override
+    Object createDepositRepresentation(Deposit deposit) {
+        return new MealDepositController.Representation(deposit);
     }
 
-    record CreateCommand(String companyName, String employeeName, double amount, String currencyCode) {}
+    @Override
+    String handledDepositType() {
+        return "MEAL";
+    }
 
     static class Representation extends RepresentationModel<Representation> {
 
@@ -103,13 +57,13 @@ class MealDepositController {
         private final String expirationDate;
         private final String creationDate;
 
-        Representation(MealDeposit mealDeposit) {
+        Representation(Deposit mealDeposit) {
             this.id = mealDeposit.getId();
             this.companyName = mealDeposit.getCompany().name();
             this.employeeName = mealDeposit.getEmployee().name();
             MoneyAmount moneyAmount = mealDeposit.getAmount();
             this.amount = moneyAmount.amount() + moneyAmount.currency().getCurrencyCode();
-            this.expirationDate = "" + mealDeposit.expirationDate();
+            this.expirationDate = "" + mealDeposit.getExpirationDate().orElse(null);
             this.creationDate = "" + mealDeposit.getCreationDate();
 
             addSelfLink();
